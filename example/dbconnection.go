@@ -19,17 +19,17 @@ func insert(u User) {
 func selectAll() []User {
 	results, err := sqldb.db.Query("SELECT * FROM User")
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	}
 
 	user := []User{}
 
 	for results.Next() {
 		u := new(User)
-		// for each row, scan the result into our tag composite object
+
 		err = results.Scan(&u.ID, &u.PWD)
 		if err != nil {
-			panic(err.Error()) // proper error handling instead of panic in your app
+			panic(err.Error())
 		}
 		user = append(user, *u)
 
@@ -54,14 +54,6 @@ func connection() {
 	if err != nil {
 		panic(err.Error())
 	}
-	// defer db.Close()
-
-	// insert, err := db.Query("INSERT INTO User VALUES ( 'visitant2', '1234' )")
-
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	// defer insert.Close()
 
 }
 
