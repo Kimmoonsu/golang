@@ -7,13 +7,42 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type User struct {
+	ID  string
+	PWD string
+}
+
 func main() {
-	// Create the database handle, confirm driver is present
-	db, _ := sql.Open("mysql", "dellis:@/shud")
+	fmt.Println("Go MySQL Tutorial")
+
+	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/study")
+
+	if err != nil {
+		panic(err.Error())
+	}
 	defer db.Close()
 
-	// Connect and check the server version
-	var version string
-	db.QueryRow("SELECT VERSION()").Scan(&version)
-	fmt.Println("Connected to:", version)
+	// insert, err := db.Query("INSERT INTO User VALUES ( 'visitant2', '1234' )")
+
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	// defer insert.Close()
+
+	results, err := db.Query("SELECT * FROM User")
+	if err != nil {
+		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+
+	for results.Next() {
+		var user User
+		// for each row, scan the result into our tag composite object
+		err = results.Scan(&user.ID, &user.PWD)
+		if err != nil {
+			panic(err.Error()) // proper error handling instead of panic in your app
+		}
+		// and then print out the tag's Name attribute
+		fmt.Println(user.ID, " : ", user.PWD)
+
+	}
 }
