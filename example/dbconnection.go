@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Create the database handle, confirm driver is present
-	db, _ := sql.Open("mysql", "dellis:@/shud")
+	db, _ := sql.Open("mysql", "dellis:@/root")
 	defer db.Close()
 
 	// Connect and check the server version
