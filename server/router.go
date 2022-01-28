@@ -8,30 +8,36 @@ import (
 type router struct {
 	// key : http method
 	// value : HandlerFunct for execute with URL pattern
-	handlers map[string]map[string]http.HandlerFunc
+	handlers map[string]map[string]HandlerFunc
 }
 
-func (r *router) HandleFunc(method, pattern string, h http.HandlerFunc) {
+func (r *router) HandleFunc(method, pattern string, h HandlerFunc) {
 	// http 메서드로 등록된 맵이 있는지 확인
 	m, ok := r.handlers[method]
 	if !ok {
 		// 등록된 맵이 없으면 새 맵을 생성
-		m = make(map[string]http.HandlerFunc)
+		m = make(map[string]HandlerFunc)
 		r.handlers[method] = m
 	}
 	// http 메서드로 등록된 맵에 URL 패턴과 핸들러 함수 등록
 	m[pattern] = h
 }
 
-type Handler interface {
-	ServeHTTP(http.ResponseWriter, *http.Request)
-}
-
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// http 메서드에 맞는 모든 handlers를 반복하여 요청 URL에 해당하는  ㅗ무읻ㄱfmf ckwdma
 	for pattern, handler := range r.handlers[req.Method] {
-		if ok, _ := match(pattern, req.URL.Path); ok {
-			handler(w, req)
+		if ok, params := match(pattern, req.URL.Path); ok {
+			// Context 생성
+			c := Context{
+				Params:         make(map[string]interface{}),
+				ResponseWriter: w,
+				Request:        req,
+			}
+			for k, v := range params {
+				c.Params[k] = v
+			}
+			// 요청 URL에 해당하는 handler 수행
+			handler(&c)
 			return
 		}
 	}
