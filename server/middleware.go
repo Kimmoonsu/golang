@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
+	"strings"
 	"time"
 )
 
@@ -64,5 +66,67 @@ func parseJsonBodyHandler(next HandlerFunc) HandlerFunc {
 			}
 		}
 		next(c)
+	}
+}
+
+func staticHandler(next HandlerFunc) HandlerFunc {
+	var (
+		dir       = http.Dir(".")
+		indexFile = "index.html"
+	)
+	return func(c *Context) {
+		// http 메서드가 GET이나 HEAD가 아니면 바로 다음 핸들러 수행
+		if c.Request.Method != "GET" && c.Request.Method != "HEAD" {
+			next(c)
+			return
+		}
+
+		file := c.Request.URL.Path
+		// URL 경로에 해당하는 파일 열기 시도
+		f, err := dir.Open(file)
+		if err != nil {
+			// URL 경로에 해당하는 파일 열기에 실패하면 바로 다음 핸들러 수행
+			next(c)
+			return
+		}
+		defer f.Close()
+
+		fi, err := f.Stat()
+		if err != nil {
+			// 파일의 상태가 정상이 아니면 바로 다음 핸들러 수행
+			next(c)
+			return
+		}
+
+		// URL 경로가 디렉터리면 indexFile을 사용
+		if fi.IsDir() {
+			// 디렉터리 경로를 URL로 사용하면 경로 끝에 "/"를 붙여야 함
+			if !strings.HasSuffix(c.Request.URL.Path, "/") {
+				http.Redirect(c.ResponseWriter, c.Request, c.Request.URL.Path+"/", http.StatusFound)
+				return
+			}
+
+			// 디렉터리를 가리키는 URL 경로에 indexFile 이름 붙여서 전체 파일 경로 생성
+			file = path.Join(file, indexFile)
+
+			// indexFile 열기 시도
+			f, err = dir.Open(file)
+			if err != nil {
+				next(c)
+				return
+			}
+			defer f.Close()
+
+			fi, err = f.Stat()
+			if err != nil || fi.IsDir() {
+				// indexFile 상태가 정상이 아니면 바로 다음 핸들러 수행
+				next(c)
+				return
+			}
+		}
+
+		// file의 내용 전달(next 핸들러로 제어권을 넘기지 않고 요청 처리를 종료함)
+		http.ServeContent(c.ResponseWriter, c.Request, file, fi.ModTime(), f)
+
 	}
 }
