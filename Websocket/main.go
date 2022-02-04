@@ -3,12 +3,9 @@ package main
 import (
 	"net/http"
 
-	sessions "github.com/goincremental/negroni-sessions"
-	cookiestore "github.com/goincremental/negroni-sessions/cookiestore"
-	"github.com/urfave/negroni"
-
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
+	"github.com/urfave/negroni"
 )
 
 const (
@@ -17,11 +14,15 @@ const (
 	sessionSecret = "simple_chat_session_secret"
 )
 
-var renderer *render.Render
+var (
+	renderer *render.Render
+)
 
 func init() {
 	// 렌더러 생성
 	renderer = render.New()
+	InitDB()
+
 }
 
 func main() {
@@ -34,22 +35,25 @@ func main() {
 		renderer.HTML(w, http.StatusOK, "index", map[string]string{"title": "Simple Chat!"})
 	})
 
-	router.GET("/login", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		// 로그인 페이지 렌더링
-		renderer.HTML(w, http.StatusOK, "login", nil)
-	})
+	// router.GET("/login", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// 	// 로그인 페이지 렌더링
+	// 	renderer.HTML(w, http.StatusOK, "login", nil)
+	// })
 
-	router.GET("/logout", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		// 세션에서 사용자 정보 제거 후 로그인 페이지로 이동
-		sessions.GetSession(r).Delete(currentUserKey)
-		sessions.GetSession(r).Delete(currentUserKey)
-		http.Redirect(w, r, "/login", http.StatusFound)
-	})
+	// router.GET("/logout", func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// 	// 세션에서 사용자 정보 제거 후 로그인 페이지로 이동
+	// 	sessions.GetSession(r).Delete(currentUserKey)
+	// 	http.Redirect(w, r, "/login", http.StatusFound)
+	// })
+
+	router.POST("/rooms", createRoom)
+	router.GET("/rooms", retrieveRooms)
 
 	// negroni 미들웨어 생성
 	n := negroni.Classic()
-	store := cookiestore.New([]byte(sessionSecret))
-	n.Use(sessions.Sessions(sessionKey, store))
+	// store := cookiestore.New([]byte(sessionSecret))
+	// n.Use(sessions.Sessions(sessionKey, store))
+	// n.Use(LoginRequired("/login", "/auth"))
 
 	// negroni에 router를 핸들러로 등록
 	n.UseHandler(router)
