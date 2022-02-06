@@ -9,12 +9,12 @@ import (
 )
 
 type Room struct {
-	ID    int64 `gorm:"primaryKey"`
-	Title string
+	ID   int    `gorm:"primaryKey" json:"id"`
+	Name string `json:"name"`
 }
 
 func (r *Room) FieldMap(req *http.Request) binding.FieldMap {
-	return binding.FieldMap{&r.Title: "title"}
+	return binding.FieldMap{&r.Name: "name"}
 }
 
 func createRoom(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
@@ -27,7 +27,7 @@ func createRoom(w http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 		return
 	}
 	fmt.Println("id : ", r.ID)
-	fmt.Println("title : ", r.Title)
+	fmt.Println("name : ", r.Name)
 
 	db, err := GetDB()
 	if err != nil {
@@ -44,6 +44,19 @@ func createRoom(w http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 }
 
 func retrieveRooms(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	fmt.Println("retrieveRooms")
-	// renderer.JSON(w, http.StatusOK, rooms)
+	db, err := GetDB()
+	if err != nil {
+		fmt.Println("getdb err : ", err)
+		panic(err)
+	}
+	var rooms []Room
+	// 모든 room 정보 조회
+	if err := db.Find(&rooms).Error; err != nil {
+		// 오류 발생시 500 에러 리턴
+		fmt.Println("select err : ", err)
+		renderer.JSON(w, http.StatusInternalServerError, err)
+		return
+	}
+	// room 조회 결과 리턴
+	renderer.JSON(w, http.StatusOK, rooms)
 }

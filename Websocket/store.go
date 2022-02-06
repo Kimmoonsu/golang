@@ -25,7 +25,7 @@ func InitDB() *gorm.DB {
 
 	// Run Migrations
 	d.LogMode(true)
-	errors := d.AutoMigrate(&Room{}).Error
+	errors := d.AutoMigrate(&Room{}, &Message{}).Error
 	if errors != nil {
 		log.Println(errors.Error())
 	}
