@@ -15,13 +15,23 @@ const (
 func main() {
 	u := NewUpbit(accessKey, secretKey)
 	marketID := "KRW-BTC"
-	minuteCandles, remaining, e := u.GetMinuteCandles(marketID, "", "50", "10")
+	minuteCandles, _, e := u.GetMinuteCandles(marketID, "", "100", "10")
 	if e != nil {
 		fmt.Errorf("%s's GetMinuteCandles error : %s", marketID, e.Error())
 		return
 	}
-	fmt.Println("GetMinuteCandles[remaining:%+v]", *remaining)
-	for _, candle := range minuteCandles {
-		fmt.Println("%+v", *candle)
+	// fmt.Println("", *remaining)
+	// for _, candle := range minuteCandles {
+	// 	fmt.Println("high : ", candle.HighPrice)
+	// }
+
+	slowK, slowD := GetStochastic(minuteCandles)
+	for index, k := range slowK {
+		fmt.Println("", index, " : ", k)
 	}
+
+	for index, d := range slowD {
+		fmt.Println("", index, " : ", d)
+	}
+
 }
