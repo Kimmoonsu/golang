@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"server/autocoin/model/quotation"
 )
 
@@ -33,7 +32,6 @@ func getK(candle []*quotation.Candle) []float64 {
 		}
 
 		K[i] = ((candle[i].TradePrice - min) / (max - min)) * 100
-		fmt.Println("K : ", K[i])
 	}
 	return K
 }
