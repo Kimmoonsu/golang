@@ -112,8 +112,8 @@ func (u *Upbit) do(request *http.Request, apiGroup string) (*http.Response, erro
 	// Exchange
 	// case ApiGroupDefault:
 	// 	client = u.defaultClient
-	// case ApiGroupOrder:
-	// 	client = u.orderClient
+	case ApiGroupOrder:
+		client = u.orderClient
 	// case ApiGroupStatusWallet:
 	// 	client = u.statusWalletClient
 	// // Quotation
